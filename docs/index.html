@@ -69,7 +69,7 @@ a + b
 
 --
 
-```tut:silent
+```scala
 def add(a: BigInt, b: BigInt) = a + b
 ```
 
@@ -86,7 +86,7 @@ _Associativity_ : a + (b + c) = (a + b) + c
 
 --
 
-```tut:silent
+```scala
 import org.scalacheck._, Prop.forAll
 object AdditionSpec extends Properties("Addition") {
   property("associativity") = 
@@ -108,7 +108,7 @@ _Closure_ : a + b is in ℤ
 
 --
 
-```tut:silent
+```scala
 def add(a: BigInt, b: BigInt): BigInt = a + b
 ```
 
@@ -174,7 +174,7 @@ object StringConcatSpec extends Properties("StringConcat") {
 ---
 # Let's parameterize it and give it a weird name to sound smart
 
-```tut:silent
+```scala
 trait Semigroup[A] {
   def combine(a: A, b: A): A
 }
@@ -182,7 +182,7 @@ trait Semigroup[A] {
 
 --
 
-```tut:silent
+```scala
 implicit val BigIntSemigroup: Semigroup[BigInt] =
   new Semigroup[BigInt] {
     def combine(a: BigInt, b: BigInt) = a + b
@@ -191,7 +191,7 @@ implicit val BigIntSemigroup: Semigroup[BigInt] =
 
 --
 
-```tut:silent
+```scala
 implicit val StringSemigroup: Semigroup[String] =
   new Semigroup[String] {
     def combine(a: String, b: String) = a + b
@@ -202,17 +202,17 @@ implicit val StringSemigroup: Semigroup[String] =
 # Sums
 
 --
-```tut:silent
+```scala
 def sum(xs: List[BigInt]): BigInt = xs.foldLeft(BigInt(0))(_ + _)
 ```
 
 --
-```tut:silent
+```scala
 def sum(xs: List[Double]): Double = xs.foldLeft(0.0)(_ + _)
 ```
 
 --
-```tut:silent
+```scala
 def sum(xs: List[String]): String = xs.foldLeft("")(_ + _)
 ```
 
@@ -237,7 +237,7 @@ These are all the same: they are seeded with a "zero", and then fold left to com
 ---
 # Monoid in Scala
 
-```tut:silent
+```scala
 trait Monoid[A] extends Semigroup[A] {
   def zero: A
 }
@@ -271,18 +271,23 @@ trait Numeric[A] {
 ```
 
 --
-```tut
-List(BigInt(1), BigInt(2), BigInt(3)).sum
+```scala
+scala> List(BigInt(1), BigInt(2), BigInt(3)).sum
+res0: scala.math.BigInt = 6
 ```
 
 --
-```tut
-List(0.1, 0.2, 0.3).sum
+```scala
+scala> List(0.1, 0.2, 0.3).sum
+res1: Double = 0.6000000000000001
 ```
 
 --
-```tut:fail
-List("a", "b", "c").sum
+```scala
+scala> List("a", "b", "c").sum
+<console>:19: error: could not find implicit value for parameter num: Numeric[String]
+       List("a", "b", "c").sum
+                           ^
 ```
 
 --
@@ -292,7 +297,7 @@ List("a", "b", "c").sum
 
 # Monoid instances
 
-```tut:silent
+```scala
 implicit val BigIntMonoid = new Monoid[BigInt] {
   def zero = BigInt(0)
   def combine(a: BigInt, b: BigInt) = a + b
@@ -311,24 +316,27 @@ implicit val StringMonoid = new Monoid[String] {
 
 # Better sum
 
-```tut:silent
+```scala
 def sum[A](xs: List[A])(implicit M: Monoid[A]): A = 
   xs.foldLeft(M.zero)(M.combine)
 ```
 
 --
-```tut
-sum(List(BigInt(1), BigInt(2), BigInt(3)))
+```scala
+scala> sum(List(BigInt(1), BigInt(2), BigInt(3)))
+res3: scala.math.BigInt = 6
 ```
 
 --
-```tut
-sum(List(0.1, 0.2, 0.3))
+```scala
+scala> sum(List(0.1, 0.2, 0.3))
+res4: Double = 0.6000000000000001
 ```
 
 --
-```tut
-sum(List("a", "b", "c"))
+```scala
+scala> sum(List("a", "b", "c"))
+res5: String = abc
 ```
 
 ---
@@ -343,7 +351,7 @@ sum(List("a", "b", "c"))
 
 --
 
-```tut:silent
+```scala
 trait CommutativeMonoid[A] extends Monoid[A]
 
 class CommutativeMonoidSpec[A](name: String)(
@@ -387,7 +395,7 @@ Algebraic reasoning tells us we can do a distributed reduce if `A` is a commutat
 
 (And the `Functor` algebra tells us we can do the map half, but let's move along.)
 
-```tut:silent:reset
+```scala
 ```
 
 ---
@@ -395,7 +403,7 @@ Algebraic reasoning tells us we can do a distributed reduce if `A` is a commutat
 
 Let's roll back to simpler words for a bit:
 
-```tut:silent
+```scala
 object Addition {
   def add(a: Int, b: Int): Int = a + b
 }
@@ -408,7 +416,7 @@ What if we want to be able to show our work?
 
 We'll lift our language into an algebraic data type.
 
-```tut:silent
+```scala
 sealed trait Expr
 case class Const(i: Int) extends Expr
 case class Add(a: Expr, b: Expr) extends Expr
@@ -432,7 +440,7 @@ Aside: why are they called algebraic data types?
 ---
 # Interpreters
 
-```tut:silent
+```scala
 def eval(expr: Expr): Int = expr match {
   case Const(i) => i
   case Add(a, b) => eval(a) + eval(b)
@@ -442,7 +450,7 @@ def eval(expr: Expr): Int = expr match {
 --
 In some other project, we can add another interpreter:
 
-```tut:silent
+```scala
 def show(expr: Expr): String = expr match {
   case Const(i) => i.toString
   case Add(a, b) => s"(${show(a)}+${show(b)})"
@@ -452,7 +460,7 @@ def show(expr: Expr): String = expr match {
 ---
 # Adding operations
 
-```tut:silent
+```scala
 sealed trait Expr
 case class Const(i: Int) extends Expr
 case class Add(a: Expr, b: Expr) extends Expr
@@ -468,7 +476,7 @@ case class Multiply(a: Expr, b: Expr) extends Expr
 ---
 # Object-oriented encoding
 
-```tut:reset:silent
+```scala
 trait Expr {
   def eval: Int
 }
@@ -484,7 +492,7 @@ final class Add(a: Int, b: Int) {
 
 In some other project, we can add another operation:
 
-```tut:silent
+```scala
 final class Negate(i: Int) {
   def eval = -i
 }
@@ -523,7 +531,7 @@ The name comes from a somewhat imposing [Haskell paper](http://okmij.org/ftp/tag
 
 --
 
-```tut:silent
+```scala
 trait ExprAlg[A] {
   def const(i: Int): A
   def add(a: A, b: A): A
@@ -533,7 +541,7 @@ trait ExprAlg[A] {
 --
 To use it, we pass the algebra as a parameter:
 
-```tut:silent
+```scala
 def example[A](implicit alg: ExprAlg[A]) = {
   import alg._
   add(add(const(1), const(2)), const(3))
@@ -543,7 +551,7 @@ def example[A](implicit alg: ExprAlg[A]) = {
 ---
 # Adding interpreters
 
-```tut:silent
+```scala
 implicit val EvalExpr = new ExprAlg[Int] {
   def const(i: Int) = i
   def add(a: Int, b: Int) = a + b
@@ -559,22 +567,24 @@ implicit val ShowExpr = new ExprAlg[String] {
 
 Summon them implicitly by type:
 
-```tut
-example[Int]
+```scala
+scala> example[Int]
+res0: Int = 6
 ```
 
 --
 
 Or explicitly. Tastes vary:
 
-```tut
-example(ShowExpr)
+```scala
+scala> example(ShowExpr)
+res1: String = ((1+2)+3)
 ```
 
 ---
 # On another slide, in another project
 
-```tut:silent
+```scala
 trait MultExprAlg[A] {
   def mult(a: A, b: A): A
 }
@@ -586,7 +596,7 @@ implicit val ShowMultExprAlg = new MultExprAlg[String] {
 --
 We can compose algebras:
 
-```tut:silent
+```scala
 def example2[A](implicit A: ExprAlg[A], M: MultExprAlg[A]) = {
   M.mult(A.const(6), A.add(A.const(4), A.const(3)))
 }
@@ -595,8 +605,9 @@ def example2[A](implicit A: ExprAlg[A], M: MultExprAlg[A]) = {
 --
 And interpret them without reopening the original project:
 
-```tut
-example2[String]
+```scala
+scala> example2[String]
+res2: String = (6*(4+3))
 ```
 
 ---
@@ -605,7 +616,7 @@ example2[String]
 --
 * When most people say finally tagless, their return types are of kind `F[A]`.  
 
-```tut:silent
+```scala
 trait MemoryAlg[F[_]] {
   def store(i: Int): F[Unit]
   def recall: F[Int]
@@ -633,7 +644,7 @@ trait MemoryAlg[F[_]] {
 ---
 # Memory interpreter
 
-```tut:silent
+```scala
 import cats.effect.IO
 import cats.effect.concurrent.Ref
 val memoryAlg: IO[MemoryAlg[IO]] =
@@ -648,7 +659,7 @@ val memoryAlg: IO[MemoryAlg[IO]] =
 ---
 # A calculator algebra in F[_]
 
-```tut:silent
+```scala
 trait CalcAlg[F[_]] {
   def const(i: Int): F[Int]
   def add(a: Int, b: Int): F[Int]
@@ -665,7 +676,7 @@ implicit def CalcAlg[F[_]: Applicative] =
 ---
 # A calculator with a memory
 
-```tut:silent
+```scala
 import cats.Monad
 def addTwo[F[_]](implicit F: Monad[F], 
                  calc: CalcAlg[F], 
@@ -680,10 +691,15 @@ def addTwo[F[_]](implicit F: Monad[F],
 
 --
   
-```tut
-implicit val mem = memoryAlg.unsafeRunSync() 
-addTwo[IO].unsafeRunSync()
-addTwo[IO].unsafeRunSync()
+```scala
+scala> implicit val mem = memoryAlg.unsafeRunSync() 
+mem: MemoryAlg[cats.effect.IO] = $anon$1@34d377b6
+
+scala> addTwo[IO].unsafeRunSync()
+res3: Int = 2
+
+scala> addTwo[IO].unsafeRunSync()
+res4: Int = 4
 ```
 
 ---
@@ -695,7 +711,7 @@ addTwo[IO].unsafeRunSync()
 --
 * Mathematicians with blogs mean something like this:
 
-```tut:silent
+```scala
 sealed trait ExprF[A]
 final case class ConstF[A](i: Int) extends ExprF[A]
 final case class AddF[A](a: A, b: A) extends ExprF[A]
@@ -707,7 +723,7 @@ final case class AddF[A](a: A, b: A) extends ExprF[A]
 --
 * Types reflect the level of nesting of your expression:
 
-```tut:silent
+```scala
 def oneDeep: ExprF[Int] = ConstF(1)
 def twoDeep: ExprF[ExprF[Int]] = AddF(oneDeep, oneDeep)
 def threeDeep: ExprF[ExprF[ExprF[Int]]] = AddF(twoDeep, twoDeep)
@@ -716,7 +732,7 @@ def threeDeep: ExprF[ExprF[ExprF[Int]]] = AddF(twoDeep, twoDeep)
 ---
 # Interpreting the F-algebra
 
-```tut:silent
+```scala
 def eval1(e: ExprF[Int]): Int = e match {
   case ConstF(i) => i
   case AddF(a, b) => a + b
@@ -739,14 +755,14 @@ What if I have four?
 
 We'll move the recursion over here:
 
-```tut:silent
+```scala
 final case class Fix[F[_]](unfix: F[Fix[F]])
 ```
 
 --
 Fix it all up:
 
-```tut:silent
+```scala
 def const[A](i: Int): Fix[ExprF] = Fix(ConstF(i))
 def add[A](a: Fix[ExprF], b: Fix[ExprF]): Fix[ExprF] = Fix(AddF(a, b))
 def fixedUp: Fix[ExprF] = add(const(1), add(const(2), const(3)))
@@ -757,7 +773,7 @@ def fixedUp: Fix[ExprF] = add(const(1), add(const(2), const(3)))
 
 `eval1` is an _initial algebra_:
 
-```tut:silent
+```scala
 type Algebra[F[_], A] = F[A] => A
 
 val eval1: Algebra[ExprF, Int] = {
@@ -769,7 +785,7 @@ val eval1: Algebra[ExprF, Int] = {
 --
 And F is for Functor
 
-```tut:silent
+```scala
 import cats.Functor
 implicit val ExprFunctor: Functor[ExprF] = new Functor[ExprF] {
   def map[A, B](expr: ExprF[A])(f: A => B): ExprF[B] =
@@ -789,7 +805,7 @@ A Wikipedian once wrote, "Deeper category theoretical studies of initial algebra
 
 I don't know about all that, but the types line up:
 
-```tut:silent
+```scala
 def cata[F[_]: Functor, A](fixed: Fix[F])(alg: Algebra[F, A]): A = {
   alg(fixed.unfix.map(cata(_)(alg)))
 } 
@@ -798,35 +814,44 @@ def cata[F[_]: Functor, A](fixed: Fix[F])(alg: Algebra[F, A]): A = {
 --
 Let's try it:
 
-```tut
-cata(fixedUp)(eval1)
+```scala
+scala> cata(fixedUp)(eval1)
+res5: Int = 6
 ```
 
 --
-```tut
-cata[ExprF, String](fixedUp) {
-  case ConstF(i) => i.toString
-  case AddF(a, b) => s"(${a}+${b})"
-}
+```scala
+scala> cata[ExprF, String](fixedUp) {
+     |   case ConstF(i) => i.toString
+     |   case AddF(a, b) => s"(${a}+${b})"
+     | }
+res6: String = (1+(2+3))
 ```
 
 ---
 # Optimization
 
-```tut
-val prog = add(const(1), add(const(2), const(0)))
-def optimize(e: ExprF[Fix[ExprF]]): Fix[ExprF] = 
-  e match {
-    case AddF(Fix(ConstF(a)), Fix(ConstF(b))) =>
-      Fix(ConstF(a + b))
-    case other => 
-      Fix(other)
-  }
-val optimized = cata(prog)(optimize)
-cata[ExprF, String](optimized) {
-  case ConstF(i) => i.toString
-  case AddF(a, b) => s"(${a}+${b})"
-}
+```scala
+scala> val prog = add(const(1), add(const(2), const(0)))
+prog: Fix[ExprF] = Fix(AddF(Fix(ConstF(1)),Fix(AddF(Fix(ConstF(2)),Fix(ConstF(0))))))
+
+scala> def optimize(e: ExprF[Fix[ExprF]]): Fix[ExprF] = 
+     |   e match {
+     |     case AddF(Fix(ConstF(a)), Fix(ConstF(b))) =>
+     |       Fix(ConstF(a + b))
+     |     case other => 
+     |       Fix(other)
+     |   }
+optimize: (e: ExprF[Fix[ExprF]])Fix[ExprF]
+
+scala> val optimized = cata(prog)(optimize)
+optimized: Fix[ExprF] = Fix(ConstF(3))
+
+scala> cata[ExprF, String](optimized) {
+     |   case ConstF(i) => i.toString
+     |   case AddF(a, b) => s"(${a}+${b})"
+     | }
+res7: String = 3
 ```
 
 ---

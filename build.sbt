@@ -12,7 +12,8 @@ lazy val baseSettings: Seq[Setting[_]] = Seq(
     "-Ywarn-value-discard",
     "-Xfuture"
   ),
-  resolvers += Resolver.sonatypeRepo("releases")
+  resolvers += Resolver.sonatypeRepo("releases"),
+  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 )
 
 lazy val algebra = project.in(file("."))
@@ -24,7 +25,12 @@ lazy val algebra = project.in(file("."))
 lazy val core = project
   .settings(moduleName := "algebra-core")
   .settings(baseSettings: _*)
-
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.scalacheck" %% "scalacheck" % "1.14.2",
+      "org.typelevel" %% "cats-effect" % "2.0.0"
+    ),
+  )
 
 lazy val slides = project
   .settings(moduleName := "algebra-slides")
